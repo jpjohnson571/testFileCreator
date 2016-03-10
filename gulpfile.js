@@ -22,9 +22,10 @@ var browserSync = require('browser-sync').create();
 var reload = browserSync.reload;
 var spa = require('browser-sync-spa');
 var templateCache = require('gulp-angular-templatecache');
-var clean = require('gulp-clean');
 var minfyHtml = require('gulp-minify-html');
 var fs = require('fs');
+var plumber = require('gulp-plumber');
+var insert = require('gulp-insert');
 
 // currently, only copy bower_components to the dev location
 gulp.task('init', function() {
@@ -32,8 +33,8 @@ gulp.task('init', function() {
     if (err == null) {
       //bower_components exists in the path.dest location do nothing (esle add it)
     } else {
-      console.log("here");
         gulp.src( path.src + '/bower_components/**/*.*', {base: path.src})
+        .pipe(plumber())
         .pipe(gulp.dest(path.dest));
     }
   });
@@ -41,7 +42,8 @@ gulp.task('init', function() {
 
 // Compile the app.js file needed for this project
 gulp.task('build-app.js', ['prepareTemplates'], function() {
-  return gulp.src(jsToCompile)
+  gulp.src(jsToCompile)
+  .pipe(plumber())
   .pipe(concat('app.js'))
   //if issues compiling/running, comment out these two next lines---------------
   // .pipe(rename({suffix: '.min'}))
@@ -51,24 +53,21 @@ gulp.task('build-app.js', ['prepareTemplates'], function() {
 
 //compile angular templates/views
 gulp.task('prepareTemplates', function() {
-  return gulp.src(path.src + '/views/**/*.html')
+   gulp.src(path.src + '/views/**/*.html')
+   .pipe(plumber())
   // .pipe(minfyHtml({empty: true}))
   .pipe(templateCache({standalone:true}))
+  .pipe(insert.prepend(
+    '//This is a temp file that compiles all of the different views and appended to the build version of app.js, do not edit\n'))
   .pipe(gulp.dest(path.src + '/views'));
 });
 
-//removes the templates file that was used for templateCache-ing the views,
-// after build-app.js task finishes
-gulp.task('clean-templates-file', ['build-app.js'], function() {
-  return gulp.src(path.src + '/views/templates.js', {read:false})
-  .pipe(clean());
-})
-
  // Compile CSS from Sass files
 gulp.task('styles', function() {
-    return gulp.src([
+     gulp.src([
       path.src + '/css/**/*.scss'
     ])
+    .pipe(plumber())
     .pipe(sass({
       includePaths: [
         path.bower + '/webui-core/core/style/sass'
@@ -80,7 +79,8 @@ gulp.task('styles', function() {
 
 // Copy html files to build folder
 gulp.task('html', function() {
-  gulp.src(path.src + '/index.html')
+   gulp.src(path.src + '/index.html')
+   .pipe(plumber())
   //minify this file
   // .pipe(minfyHtml({empty: true}))
   // .pipe(rename({suffix: '.min'}))
@@ -104,11 +104,14 @@ gulp.task('browserSync', function() {
  // Watch for changes in files
  gulp.task('watch', ['browserSync'], function() {
     // Watch .js files
-  gulp.watch(path.src + '/js/*.js', ['build-app.js']).on('change', reload);
+    gulp.watch([jsToCompile, path.src + '/views/**/*.html'], ['build-app.js']);
+    gulp.watch([jsToCompile, path.src + '/views/**/*.html']).on('change', reload);
     // Watch .scss files -- currently not needed
-  // gulp.watch(path.src + '/css/*.scss', ['styles']).on('change', reload);
+    // gulp.watch(path.src + '/css/*.scss', ['styles']);
+    // gulp.watch(path.src + '/css/*.scss').on('change', reload);
     // Watch .html files
-   gulp.watch(path.src + '/html/*.html', ['html']).on('change', reload);
-  });
+    gulp.watch(path.src + '/index.html', ['html']);
+    gulp.watch(path.src + '/index.html').on('change', reload);
+   });
  // Default Task
-gulp.task('default', ['init','build-app.js','html','styles','clean-templates-file','watch']);
+gulp.task('default', ['init','build-app.js','html','styles','watch']);
