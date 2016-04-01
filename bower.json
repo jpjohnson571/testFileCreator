@@ -1,17 +1,19 @@
 {
-  "name": "dc4-search",
-  "description": "Search for company info on DC4.",
-  "main": "",
-  "authors": [
-    "Integrated Engineering"
-  ],
+  "name": "profile-connector",
+  "main": "application/src/js/app.js",
   "license": "ISC",
-  "moduleType": [],
-  "homepage": "",
-  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
   "dependencies": {
     "angular": "1.4.8",
     "angular-route": "1.4.8",
-    "webui-core": "git@github.com:SPSCommerce/webui-core.git"
+    "webui-core": "git@github.com:SPSCommerce/webui-core.git#^2.1.1",
+    "webui-feedback": "git@github.com:SPSCommerce/webui-feedback.git#^1.0.5",
+    "chosen": "git://github.com/harvesthq/bower-chosen.git#^1.4.2"
   }
 }

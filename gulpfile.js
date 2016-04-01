@@ -1,117 +1,171 @@
-// Include gulp
-var gulp = require('gulp');
- // Define base folders
-var path = {
-  'src': './app',
-  'dest': './dev',
-  'bower': './dev/bower_components'
+var gulp = require('gulp'),
+    del = require('del'),
+    gutil = require('gulp-util'),
+    jshint = require('gulp-jshint'),
+    browserify = require('browserify'),
+    concat = require('gulp-concat'),
+    source = require('vinyl-source-stream'),
+    buffer = require('vinyl-buffer'),
+    uglify = require('gulp-uglify'),
+    sourcemaps = require('gulp-sourcemaps'),
+    runSequence = require('run-sequence'),
+    rename = require('gulp-rename'),
+    browserSync = require('browser-sync'),
+    testServer = require('karma').Server;
+
+
+// Environment options
+//  --minify false (will not minify the javascript code)
+//  --env local/prod/stage/dev (build the app for the various environments)
+
+
+/***********************
+ * PATHS
+ ***********************/
+var _root = __dirname + '/';
+var _app = _root + 'application/'
+var _source = _app + 'src/';
+var _paths = {
+    bower: _root + 'bower_components/',
+    config: {
+        npm: _root + 'package.json',
+        karma: _root + 'karma.conf.js',
+    },
+    js: _source + 'js/',
+    dist: _app + 'dist/' + (gutil.env.env ? gutil.env.env : 'local') + '/',
+    css: _source + 'style/css/',
+    sass: _source + 'style/sass/',
+    tests: _source + 'tests/'
 };
-// Define the files compiled for path.dest + '/app.js'
-var jsToCompile = [
-  path.src + '/app.js',
-  path.src + '/controllers/*.js',
-  path.src + '/views/templates.js'
-];
 
- // Include plugins
-var sass = require('gulp-sass');
-var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
-var browserSync = require('browser-sync').create();
-var reload = browserSync.reload;
-var spa = require('browser-sync-spa');
-var templateCache = require('gulp-angular-templatecache');
-var minfyHtml = require('gulp-minify-html');
-var fs = require('fs');
-var plumber = require('gulp-plumber');
-var insert = require('gulp-insert');
+/***********************
+ * GLOBS
+ ***********************/
+var globs = {
+    js: [
+        _paths.js + '**/!(config*).js'
+    ],
+    json: [
+        _source + '**/*.json'
+    ],
+    css: [
+        _paths.js + '**/*.css',
+        _paths.css + '**/*.css'
+    ],
+	others: [
+		_source + '*.ico'
+	],
+    html: [
+        _paths.js + '**/*.html',
+        _source + '*.html',
+        _source + '**/*.html'
+    ],
+    tests: [_paths.tests + '**/*spec.js'],
+    bower: [
+        _paths.bower + 'angular-route/angular-route.min.js',
+        _paths.bower + 'angular/angular.min.js',
+        _paths.bower + 'webui-core/dist/*.js',
+        _paths.bower + 'webui-core/dist/*.css',
+        _paths.bower + 'webui-core/dist/*.map',
+        _paths.bower + 'webui-feedback/dist/*.js',
+        _paths.bower + 'webui-feedback/dist/*.css',
+        _paths.bower + 'webui-feedback/dist/*.map',
+        // _paths.bower + 'chosen/*.js',
+        // _paths.bower + 'chosen/*.css'
+    ]
+};
 
-// currently, only copy bower_components to the dev location
-gulp.task('init', function() {
-  fs.stat(path.bower + '/webui-core', function(err, stat) {
-    if (err == null) {
-      //bower_components exists in the path.dest location do nothing (esle add it)
-    } else {
-        gulp.src( path.src + '/bower_components/**/*.*', {base: path.src})
-        .pipe(plumber())
-        .pipe(gulp.dest(path.dest));
-    }
+var staticFiles = [].concat(globs.json).concat(globs.html).concat(globs.others);
+
+// JSHint task
+gulp.task('lint', function() {
+    gulp.src(globs.js)
+    .pipe(jshint())
+    // You can look into pretty reporters as well, but that's another story
+    .pipe(jshint.reporter('default'));
+});
+
+// Browserify task
+gulp.task('browserify', ['create-config-file'], function() {
+  var b = browserify({
+    entries: _paths.js + 'app.js',
+    insertGlobals: true,
+    debug: true
   });
+
+  return b.bundle()
+    .pipe(source('migrator.bundle.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe((gutil.env.minify === 'false') ? gutil.noop() : uglify())
+    .on('error', gutil.log)
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest(_paths.dist));
 });
 
-// Compile the app.js file needed for this project
-gulp.task('build-app.js', ['prepareTemplates'], function() {
-  gulp.src(jsToCompile)
-  .pipe(plumber())
-  .pipe(concat('app.js'))
-  //if issues compiling/running, comment out these two next lines---------------
-  // .pipe(rename({suffix: '.min'}))
-  // .pipe(uglify())
-  .pipe(gulp.dest(path.dest));
+gulp.task('copy-vendor-files', function () {
+    return gulp.src(globs.bower)
+        .pipe(gulp.dest(_paths.dist + 'vendor/'));
 });
 
-//compile angular templates/views
-gulp.task('prepareTemplates', function() {
-   gulp.src(path.src + '/views/**/*.html')
-   .pipe(plumber())
-  // .pipe(minfyHtml({empty: true}))
-  .pipe(templateCache({standalone:true}))
-  .pipe(insert.prepend(
-    '//This is a temp file that compiles all of the different views and appended to the build version of app.js, do not edit\n'))
-  .pipe(gulp.dest(path.src + '/views'));
+gulp.task('delete-config-file', function () {
+    return del([_paths.js + 'api-configs/config.js']);
 });
 
- // Compile CSS from Sass files
-gulp.task('styles', function() {
-     gulp.src([
-      path.src + '/css/**/*.scss'
-    ])
-    .pipe(plumber())
-    .pipe(sass({
-      includePaths: [
-        path.bower + '/webui-core/core/style/sass'
-      ]
-    }))
-    .pipe(concat('app.css'))
-    .pipe(gulp.dest(path.dest +'/styles'));
+gulp.task('create-config-file', ['delete-config-file'], function () {
+    gutil.log('creating config file for environment: ', gutil.env.env ? gutil.env.env : 'local');
+    return gulp.src(_paths.js + 'api-configs/config-' + (gutil.env.env ? gutil.env.env : 'local') + '.js')
+        .pipe(rename('config.js'))
+        .pipe(gulp.dest(_paths.js + 'api-configs/'));
 });
 
-// Copy html files to build folder
-gulp.task('html', function() {
-   gulp.src(path.src + '/index.html')
-   .pipe(plumber())
-  //minify this file
-  // .pipe(minfyHtml({empty: true}))
-  // .pipe(rename({suffix: '.min'}))
-  .pipe(gulp.dest(path.dest));
+gulp.task('copy-static-files', function () {
+    return gulp.src(staticFiles)
+        .pipe(gulp.dest(_paths.dist));
 });
 
-// Spin up a server
-gulp.task('browserSync', function() {
-  browserSync.use(spa({
-    selector: "[ng-app]" //Only needed for angular apps
-  }));
-
-  browserSync.init({
-    port: 8080,
-    server: {
-      baseDir: path.dest //this is where the server will run index.html from
-    }
-  })
+gulp.task('clean-dist-files', function () {
+    return del([_paths.dist]);
 });
 
- // Watch for changes in files
- gulp.task('watch', ['browserSync'], function() {
-    // Watch .js files
-    gulp.watch([jsToCompile, path.src + '/views/**/*.html'], ['build-app.js']);
-    gulp.watch([jsToCompile, path.src + '/views/**/*.html']).on('change', reload);
-    // Watch .scss files -- currently not needed
-    // gulp.watch(path.src + '/css/*.scss', ['styles']);
-    // gulp.watch(path.src + '/css/*.scss').on('change', reload);
-    // Watch .html files
-    gulp.watch(path.src + '/index.html', ['html']);
-    gulp.watch(path.src + '/index.html').on('change', reload);
-   });
- // Default Task
-gulp.task('default', ['init','build-app.js','html','styles','watch']);
+gulp.task('server', function() {
+    var bs = browserSync.create();
+    bs.init({
+        server: _paths.dist,
+        browser: "google chrome",
+    });
+    gulp.watch(['**/*.html', '**/*.css', '**/*.js'], {cwd: _paths.dist}, bs.reload);
+});
+
+gulp.task('watch', ['lint'], function() {
+    gulp.watch(globs.js, ['recompileJS']);
+    gulp.watch(staticFiles, ['copy-static-files']);
+    // gulp.watch(globs.tests, ['test']);
+});
+
+gulp.task('build', function (done) {
+    runSequence(
+                // 'test',
+                'clean-dist-files',
+                'copy-static-files',
+                'copy-vendor-files',
+                'browserify',
+                done);
+});
+
+gulp.task('recompileJS', function (done) {
+    runSequence('lint',
+    // 'test',
+    'browserify', done);
+});
+
+gulp.task('test', function (done) {
+    new testServer({
+        configFile: _root + 'karma.conf.js',
+        singleRun: true
+    }, done).start();
+});
+
+gulp.task('default', function (done) {
+    runSequence('watch', 'build', 'server', done);
+});

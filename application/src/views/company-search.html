@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="small-16 small-centered large-8 columns">
+    <dl class="tabs">
+      <dd ng-class="{'active': showTab == 'vendor'}">
+        <a ng-click="showTab='vendor'">Vendor</a>
+      </dd>
+      <dd ng-class="{'active': showTab == 'doctype' || showTab == 'retailer'}">
+        &nbsp;
+        <i class="fa fa-chevron-right fa-2x">&nbsp;</i>
+      </dd>
+        <dd ng-class="{'active': showTab == 'doctype'}">
+        <a ng-click="showTab='doctype'">Document Types</a>
+      </dd>
+      <dd >
+        &nbsp;
+        <i class="fa fa-chevron-right fa-2x">&nbsp;</i>
+      </dd>
+        <dd ng-class="{'active': showTab == 'retailer'}">
+        <a ng-click="showTab='retailer'">Retailers</a>
+      </dd>
+    </dl>
+  </div>
+  <div ng-include="'views/vendor.tab.html'"  ng-show="showTab == 'vendor'">
+    show vendor!
+  </div>
+  <div ng-include="'views/doctype.tab.html'" ng-show="showTab == 'doctype'">
+    show doctype!
+  </div>
+  <div ng-include="'views/retailer.tab.html'" ng-show="showTab == 'retailer'">
+    show retailer!
+  </div>
+</div>

@@ -1,4 +1,38 @@
-node_modules/
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.Python
+
+# C extensions
+*.so
+
+# Vim
+*~
+
+# Intellij
+.idea/
+*.iml
+
+# Others
+*.swp
+env
+dist
+*app.log*
+
+# Node and npm
+node_modules
+
+# Config stuff
+application/src/js/api-configs/config.js
+
+# JSPM & Bower package folders
+jspm_packages/
 bower_components/
-dev/
-app/views/templates.js
+
+# Apple stuff
+*.DS_Store
+
+# Vagrant
+.vagrant/
+Vagrantfile

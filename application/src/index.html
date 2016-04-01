@@ -1,0 +1,32 @@
+<html ng-app="dc4SearchApp">
+<head>
+  <title>Profile Connector</title>
+  <meta charset="utf-8">
+
+  <!-- core dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.3/angular.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/angular.ui-router/0.2.11/angular-ui-router.js"></script>
+
+  <!-- webui-core -->
+  <link href="vendor/webui-core.min.css" rel="stylesheet">
+  <script src="vendor/webui-core.min.js"></script>
+
+  <!-- webui-feedback -->
+  <link href="vendor/bundle.min.css" rel="stylesheet">
+  <script src="vendor/bundle.min.js"></script>
+
+  <!-- migrator app -->
+  <script src="migrator.bundle.js"></script>
+
+</head>
+<body class="centered">
+  <spsui-application>
+    <spsui-viewport>
+      <ui-view>
+      </ui-view>
+    </spsui-viewport>
+  </spsui-application>
+</body>
+</html>

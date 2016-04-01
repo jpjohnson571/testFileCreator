@@ -1,0 +1,49 @@
+<fieldset ng-form="form">
+  <legend>
+    Document and data types
+  </legend>
+  <div class="row">
+    <div class="small-3 large-3 columns">
+      <label class="required">Document:
+        <select name="doctype.select" ng-model="document.documentType"
+                  ng-options="option.value as option.value for option in options">
+        </select>
+      </label>
+    </div>
+    <div class="small-6 large-6 columns">
+      <label class="required">data type:
+        <input type="text" ng-model="document.dataType" placeholder="enter a data type here..."/>
+      </label>
+    </div>
+    <div>
+      <a>
+        <i class="fa fa-plus-circle fa-2x"
+            ng-click="addDocument({'documentType': document.documentType, 'dataType': document.dataType})">
+          &nbsp;
+        </i>
+      </a> </div>
+  </div>
+
+  <fieldset>
+    <legend>
+      Selected documents and data types
+    </legend>
+    <div ng-repeat="document in documents">
+      <span>
+        <a href="">
+          <i class="fa fa-minus-circle fa-lg" ng-click="removeDocument($index)"></i>
+        </a>
+        <span>{{document.documentType}} ------ {{document.dataType}}</span>
+      </span>
+    </div>
+  </fieldset>
+</fieldset>
+<div>
+  <div class="txt-left">
+    <button class="button" ng-click="showTab = 'vendor'">previous</button>
+  </div>
+  <div class="txt-right">
+    <button class="key" ng-click="showTab = 'retailer'">Next</button>
+  </div>
+</div>
+<hr />
