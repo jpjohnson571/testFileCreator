@@ -1,12 +1,12 @@
 /* App Module */
 
-angular.module('dc4SearchApp', ['ui.router']);
+angular.module('dc4SearchApp', ['ui.router', 'webui-core']);
 
 angular.module('dc4SearchApp').config(routes);
 
   routes.$inject = ['$stateProvider', '$urlRouterProvider'];
   function routes($stateProvider, $urlRouterProvider) {
-    console.log("routing");
+    // console.log("routing");
       $urlRouterProvider.otherwise('/company-search/');
 
       $stateProvider
@@ -36,12 +36,30 @@ angular.module('dc4SearchApp').config(routes);
     companySearchCtrl.$inject = ["$scope"];
     function companySearchCtrl($scope) {
 
-      $scope.showTab = 'vendor';
-      $scope.options = [{
-         value: '856'
-      }, {
-         value: '850'
-      }];
+      $scope.tabs = [
+        { title:"Vendor", url:"views/vendor.tab.html" },
+        { title:"DocType", url:"views/doctype.tab.html" },
+        { title:"Retailer", url:"views/retailer.tab.html" }
+      ];
+      $scope.currentTab = 'views/vendor.tab.html';
+
+      $scope.onClickTab = function (tab) {
+          $scope.currentTab = tab.url;
+      }
+      $scope.isActiveTab = function(tabUrl) {
+          return tabUrl == $scope.currentTab;
+      }
+      // $scope.nextTabs = function () {
+      //   $scope.tabs
+      //   var totalSize = 3;
+      //
+      // }
+      $scope.options = [
+        {value: '856'},
+        {value: '850'},
+        {value: '810'},
+        {value: '855'},
+      ];
 
       $scope.profiles = [
         {
@@ -72,21 +90,19 @@ angular.module('dc4SearchApp').config(routes);
             information: 'display capability information here'
           }
         }];
-
       $scope.documents = [];
-      $scope.tab = 'vendor-layout';
       $scope.addDocument = function(document) {
         console.log(document);
         $scope.documents.push(document);
         console.log($scope.documents);
-      }
+      };
       $scope.removeDocument = function(index) {
         $scope.documents.splice(index, 1);
         console.log($scope.documents);
-      }
+      };
       $scope.showCapabilities = function(profile, true_false) {
         profile.showCapabilities = true_false;
-      }
+      };
 
-      console.log('controller');
+      // console.log('controller');
   }
