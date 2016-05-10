@@ -8,27 +8,12 @@ angular.module('dc4SearchApp').config(routes);
   function routes($stateProvider, $urlRouterProvider) {
     // console.log("routing");
       $urlRouterProvider.otherwise('/company-search/');
-
-      $stateProvider
-      .state('company-search', {
+      $stateProvider.state('company-search', {
           url:'/company-search/',
           templateUrl: '/views/company-search.html',
-          // templateUrl: '/views/vendor.tab.html',
-          // templateUrl: '/views/doctype.tab.html',
-          // templateUrl: '/views/retailer.tab.html',
-          // templateUrl: '/views/display.html',
           controller: 'companySearchCtrl'
       })
-      .state('vendor-layout', {
-          templateUrl: '/views/vendor.tab.html',
-      })
-      .state('doctype-layout', {
-          templateUrl: '/views/doctype.tab.html',
-      })
-      .state('retailer-layout', {
-          templateUrl: '/views/retailer.tab.html',
-      });
-  }
+    }
 
 
   angular.module('dc4SearchApp').controller('companySearchCtrl', companySearchCtrl);
@@ -37,29 +22,32 @@ angular.module('dc4SearchApp').config(routes);
     function companySearchCtrl($scope) {
 
       $scope.tabs = [
-        { title:"Vendor", url:"views/vendor.tab.html" },
-        { title:"DocType", url:"views/doctype.tab.html" },
-        { title:"Retailer", url:"views/retailer.tab.html" }
-      ];
-      $scope.currentTab = 'views/vendor.tab.html';
+        { title:"Vendor", url:"views/vendor.tab.html", index: 0},
+        { title:"DataType", url:"views/doctype.tab.html", index: 1},
+        { title:"Retailer", url:"views/retailer.tab.html", index: 2}
+      ]
+
+
+      $scope.currentTab = 0;
 
       $scope.onClickTab = function (tab) {
-          $scope.currentTab = tab.url;
+          $scope.currentTab = tab.index;
       }
-      $scope.isActiveTab = function(tabUrl) {
-          return tabUrl == $scope.currentTab;
+      $scope.nextTab = function() {
+        if ($scope.currentTab == 2){
+          $scope.currentTab = 0;
+        } else {
+          $scope.currentTab += 1;
+        }
       }
-      // $scope.nextTabs = function () {
-      //   $scope.tabs
-      //   var totalSize = 3;
-      //
-      // }
-      $scope.options = [
-        {value: '856'},
-        {value: '850'},
-        {value: '810'},
-        {value: '855'},
-      ];
+      $scope.previousTab = function() {
+        if ($scope.currentTab == 2){
+          $scope.currentTab -= 1;
+        } else {
+          $scope.currentTab -= 1;
+        }
+      }
+
 
       $scope.profiles = [
         {
