@@ -1,0 +1,72 @@
+<section class="content-section">
+  <h1>Test File Creator</h1>
+  <fieldset>
+    <legend>Upload Files:</legend>
+  </fieldset>
+  <div class="row">
+    <div class="small-16 large-16 columns">
+      <div class="droparea" ngf-drop ng-model="files" ngf-drag-over-class="'dragover'" ngf-multiple="true" ngf-allow-dir="true">
+        <span class="upload">
+          "Drag and drop files here to attach them, or"
+          <br>
+          <br>
+          <button class="button fileSelect" ngf-select="uploadFiles($files, $invalidFiles)" multiple
+           ngf-max-height="1000" ngf-max-size="1MB">Select Files</button>
+        </span>
+      </div>
+      <label>Files:</label>
+      <ul>
+        <li ng-repeat="f in files" style="font:smaller">{{f.name}} {{f.$errorParam}}
+        </li>
+        <li ng-repeat="f in errFiles" style="font:smaller">{{f.name}} {{f.$error}} {{f.$errorParam}}</li>
+      </ul>
+      {{errorMsg}}
+    </div>
+  </div>
+  <fieldset>
+    <legend>Select fields/New Values:</legend>
+  </fieldset>
+ <div class="row" >
+	<div class="small-16 large-16 columns">
+			<div class="Container">
+        <div class= "small-4 columns large-4 columns">
+          <label class="required">
+            Select Field:
+            <select id="sel" ng-model = "fieldName" ng-options = "field for field in fields"></select>
+          </label>
+        </div>
+        <div class= "small-6 columns large-6 columns">
+          <label class="required">
+            Value:
+            <input type="text" ng-model="fieldValue" placeholder="enter value..."/>
+          </label>
+        </div>
+        <div class="addPair">
+          <label>
+            Add to substitution list:
+          </label>
+          <button class="button key" ng-click="addFields()">AddField</button>
+        </div>
+        <div class= "small-6 columns large-6 columns">
+        </div>
+			</div>
+		</div>
+	</div>
+  <fieldset>
+    <legend>Selected Fields with New Values:</legend>
+    <div ng-repeat="valuePair in valuePairs">
+      <span>
+        <span>{{valuePair.name}}:{{valuePair.value}}</span>
+        <a href="">
+          <i class="fa fa-minus-circle fa-lg" ng-click="removePair($index)"></i>
+        </a>
+      </span>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Submit and Substitute:</legend>
+    <div class="txt-left">
+      <button class="confirm" ng-click="nextTab()">SUBMIT</button>
+    </div>
+  </fieldset>
+</section>

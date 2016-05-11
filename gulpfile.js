@@ -64,6 +64,7 @@ var globs = {
     bower: [
         _paths.bower + 'angular-route/angular-route.min.js',
         _paths.bower + 'angular/angular.min.js',
+        _paths.bower + 'ng-file-upload/*.js',
         _paths.bower + 'webui-core/dist/*.js',
         _paths.bower + 'webui-core/dist/*.css',
         _paths.bower + 'webui-core/dist/*.map',

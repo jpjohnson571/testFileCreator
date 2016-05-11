@@ -1,96 +1,63 @@
 /* App Module */
 
-angular.module('dc4SearchApp', ['ui.router', 'webui-core']);
+angular.module('fileCreator', ['ui.router', 'webui-core', 'ngFileUpload']);
 
-angular.module('dc4SearchApp').config(routes);
-
+angular.module('fileCreator').config(routes);
   routes.$inject = ['$stateProvider', '$urlRouterProvider'];
   function routes($stateProvider, $urlRouterProvider) {
     // console.log("routing");
-      $urlRouterProvider.otherwise('/company-search/');
-      $stateProvider.state('company-search', {
-          url:'/company-search/',
-          templateUrl: '/views/company-search.html',
-          controller: 'companySearchCtrl'
-      })
+      $urlRouterProvider.otherwise('/part-search/');
+      $stateProvider.state('part-search', {
+          url:'/part-search/',
+          templateUrl: '/views/part-search.html',
+          controller: 'partNumberSearch'
+      });
     }
 
-
-  angular.module('dc4SearchApp').controller('companySearchCtrl', companySearchCtrl);
-
-    companySearchCtrl.$inject = ["$scope"];
-    function companySearchCtrl($scope) {
-
-      $scope.tabs = [
-        { title:"Vendor", url:"views/vendor.tab.html", index: 0},
-        { title:"DataType", url:"views/doctype.tab.html", index: 1},
-        { title:"Retailer", url:"views/retailer.tab.html", index: 2}
-      ]
-
-
-      $scope.currentTab = 0;
-
-      $scope.onClickTab = function (tab) {
-          $scope.currentTab = tab.index;
-      }
-      $scope.nextTab = function() {
-        if ($scope.currentTab == 2){
-          $scope.currentTab = 0;
-        } else {
-          $scope.currentTab += 1;
-        }
-      }
-      $scope.previousTab = function() {
-        if ($scope.currentTab == 2){
-          $scope.currentTab -= 1;
-        } else {
-          $scope.currentTab -= 1;
-        }
-      }
-
-
-      $scope.profiles = [
-        {
-          name: 'profile1',
-          information: 'desired info for this profile goes here',
-          capability: {
-            name: 'capability1',
-            information: 'display capability information here'
-          }
-        },
-        {
-          name: 'profile2',
-          information: 'desired info for this profile goes here',
-          capability: {
-            name: 'capability1',
-            information: 'display capability information here'
-          },
-          capability: {
-            name: 'capability2',
-            information: 'display capability information here'
-          }
-        },
-        {
-          name: 'profile3',
-          information: 'desired info for this profile goes here',
-          capability: {
-            name: 'capability1',
-            information: 'display capability information here'
-          }
-        }];
-      $scope.documents = [];
-      $scope.addDocument = function(document) {
-        console.log(document);
-        $scope.documents.push(document);
-        console.log($scope.documents);
+  angular.module('fileCreator').controller('partNumberSearch', ['$scope', 'Upload', '$timeout', function ($scope, Upload, $timeout) {
+      $scope.fields = [
+        {name:'TEST_PO_x',value:""},
+        {name:'VENDOR_NUMBER',value:""},
+        {name:'REC_QUAL',value:""},
+        {name:'REC_ID',value:""},
+        {name:'JANE SMITH',value:""},
+        {name:'888-739-3232',value:""},
+        {name:'TEST_PO_x',value:""},
+        {name:'VENDOR_PART_NUM',value:""},
+        {name:'UPC_CASE_CODE',value:""},
+        {name:'ITEM_DESCRIPTION',value:""}
+      ];
+      $scope.showList = false;
+      $scope.newFields = [];
+      $scope.addFields=function(){
+        $scope.showList = true;
+        $scope.newFields = angular.copy($scope.fields);
       };
-      $scope.removeDocument = function(index) {
-        $scope.documents.splice(index, 1);
-        console.log($scope.documents);
-      };
-      $scope.showCapabilities = function(profile, true_false) {
-        profile.showCapabilities = true_false;
+      $scope.removePair = function(index) {
+        $scope.newFields.splice(index, 1);
       };
 
-      // console.log('controller');
-  }
+      $scope.uploadFiles = function(files, errFiles) {
+          console.log('TESTING');
+          $scope.files = files;
+          $scope.errFiles = errFiles;
+          angular.forEach(files, function(file) {
+              file.upload = Upload.upload({
+                  url: 'https://angular-file-upload-cors-srv.appspot.com/upload',
+                  data: {file: file}
+              });
+
+              file.upload.then(function (response) {
+                  $timeout(function () {
+                      file.result = response.data;
+                  });
+              }, function (response) {
+                  if (response.status > 0)
+                      $scope.errorMsg = response.status + ': ' + response.data;
+              }, function (evt) {
+                  file.progress = Math.min(100, parseInt(100.0 *
+                                           evt.loaded / evt.total));
+              });
+          });
+      };
+  }]);
